@@ -346,6 +346,10 @@ class CameraOperation:
                       % (self.st_frame_info.nWidth, self.st_frame_info.nHeight, self.st_frame_info.nFrameNum))
                 # 释放缓存
                 # self.obj_cam.MV_CC_FreeImageBuffer(stOutFrame)
+
+                self.n_save_image_size = self.st_frame_info.nWidth * self.st_frame_info.nHeight * 3 + 2048
+                if img_buff is None:
+                    img_buff = (c_ubyte * self.n_save_image_size)()
             else:
                 print("no data, ret = " + To_hex_str(ret))
                 continue
@@ -362,31 +366,31 @@ class CameraOperation:
             self.obj_cam.MV_CC_DisplayOneFrame(stDisplayParam)
 
             """---------------------------------------------------------------------------------------"""
-            # # 转换像素结构体赋值
-            # stConvertParam = MV_CC_PIXEL_CONVERT_PARAM()
-            # memset(byref(stConvertParam), 0, sizeof(stConvertParam))
-            # stConvertParam.nWidth = self.st_frame_info.nWidth
-            # stConvertParam.nHeight = self.st_frame_info.nHeight
-            # stConvertParam.pSrcData = cast(buf_cache, POINTER(c_ubyte))
-            # stConvertParam.nSrcDataLen = self.st_frame_info.nFrameLen
-            # stConvertParam.enSrcPixelType = self.st_frame_info.enPixelType
-            #
-            # # RGB直接显示
-            # if PixelType_Gvsp_RGB8_Packed == self.st_frame_info.enPixelType:
-            #     numArray = CameraOperation.Color_numpy(self, buf_cache, self.st_frame_info.nWidth, self.st_frame_info.nHeight)
-            # else:
-            #     nConvertSize = self.st_frame_info.nWidth * self.st_frame_info.nHeight * 3
-            #     stConvertParam.enDstPixelType = PixelType_Gvsp_RGB8_Packed
-            #     stConvertParam.pDstBuffer = (c_ubyte * nConvertSize)()
-            #     stConvertParam.nDstBufferSize = nConvertSize
-            #     ret = self.obj_cam.MV_CC_ConvertPixelType(stConvertParam)
-            #     if ret != 0:
-            #         continue
-            #     cdll.msvcrt.memcpy(byref(img_buff), stConvertParam.pDstBuffer, nConvertSize)
-            #     numArray = CameraOperation.Color_numpy(self, img_buff, self.st_frame_info.nWidth, self.st_frame_info.nHeight)
-            #
-            # # Add callback here
-            # numArray = Hikcam_callback(0, numArray)
+            # 转换像素结构体赋值
+            stConvertParam = MV_CC_PIXEL_CONVERT_PARAM()
+            memset(byref(stConvertParam), 0, sizeof(stConvertParam))
+            stConvertParam.nWidth = self.st_frame_info.nWidth
+            stConvertParam.nHeight = self.st_frame_info.nHeight
+            stConvertParam.pSrcData = cast(self.buf_save_image, POINTER(c_ubyte))
+            stConvertParam.nSrcDataLen = self.st_frame_info.nFrameLen
+            stConvertParam.enSrcPixelType = self.st_frame_info.enPixelType
+
+            # RGB直接显示
+            if PixelType_Gvsp_RGB8_Packed == self.st_frame_info.enPixelType:
+                numArray = CameraOperation.Color_numpy(self, self.buf_save_image, self.st_frame_info.nWidth, self.st_frame_info.nHeight)
+            else:
+                nConvertSize = self.st_frame_info.nWidth * self.st_frame_info.nHeight * 3
+                stConvertParam.enDstPixelType = PixelType_Gvsp_RGB8_Packed
+                stConvertParam.pDstBuffer = (c_ubyte * nConvertSize)()
+                stConvertParam.nDstBufferSize = nConvertSize
+                ret = self.obj_cam.MV_CC_ConvertPixelType(stConvertParam)
+                if ret != 0:
+                    continue
+                cdll.msvcrt.memcpy(byref(img_buff), stConvertParam.pDstBuffer, nConvertSize)
+                numArray = CameraOperation.Color_numpy(self, img_buff, self.st_frame_info.nWidth, self.st_frame_info.nHeight)
+
+            # Add callback here
+            numArray = Hikcam_callback(0, numArray)
             """---------------------------------------------------------------------------------------"""
 
             # 是否退出
