@@ -22,7 +22,7 @@ from tkinter import ttk
 sys.path.append("../MvImport")
 from MvImport.MvCameraControl_class import *
 
-from utils_callback import Hikcam_callback
+from My_utils.utils_callback import Hikcam_callback
 
 # 强制关闭线程
 def Async_raise(tid, exctype):
