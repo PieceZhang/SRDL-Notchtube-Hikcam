@@ -271,7 +271,7 @@ class CameraOperation():
                 numArray = CameraOperation.Color_numpy(self, img_buff, self.st_frame_info.nWidth, self.st_frame_info.nHeight)
 
             """ Add callback here """
-            numArray = Hikcam_callback(index, numArray)
+            numArray, status = Hikcam_callback(index, numArray)
             """-------------------------------------------------------------------------"""
 
             # 合并OpenCV到Tkinter界面中
