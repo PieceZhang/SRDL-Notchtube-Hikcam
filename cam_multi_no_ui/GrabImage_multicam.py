@@ -35,13 +35,14 @@ def Color_numpy(data, nWidth, nHeight):
 
 # 为线程定义一个函数
 def work_thread(caml, pData=0, nDataSize=0):
+    # 同时开启多个cam图像会存在延迟，尝试使用多个thread，未能消除延迟
     stOutFrame = MV_FRAME_OUT()
     buf_cache = None
     img_buff = None
     memset(byref(stOutFrame), 0, sizeof(stOutFrame))
     while True:
         for index, cam in enumerate(caml):
-            ret = cam.MV_CC_GetImageBuffer(stOutFrame, 2000)
+            ret = cam.MV_CC_GetImageBuffer(stOutFrame, 1000)
             if None != stOutFrame.pBufAddr and 0 == ret:
                 print("[INFO: CAM%d] Thread: get one frame: Width[%d], Height[%d], nFrameNum[%d]" % (
                     index, stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight, stOutFrame.stFrameInfo.nFrameNum))
